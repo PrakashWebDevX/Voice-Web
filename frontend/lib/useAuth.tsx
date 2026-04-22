@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const syncUser = async (firebaseUser: User) => {
     try {
       const token = await firebaseUser.getIdToken();
-      const data = await apiClient('/auth/sync', {
+      const data = await apiClient<{ user: UserProfile }>('/auth/sync', {
         method: 'POST',
         token,
         body: {
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     try {
       const token = await user.getIdToken();
-      const data = await apiClient('/auth/me', { token });
+      const data = await apiClient<{ user: UserProfile }>('/auth/me', { token });
       setProfile(data.user);
     } catch (err) {
       console.error('Failed to refresh profile:', err);
