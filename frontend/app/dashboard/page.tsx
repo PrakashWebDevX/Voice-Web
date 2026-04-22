@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, Zap, ChevronRight } from 'lucide-react';
@@ -13,7 +13,7 @@ import { CodeSkeleton } from '@/components/ui/Skeleton';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, profile, getToken, loading, refreshProfile } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,7 +42,6 @@ export default function DashboardPage() {
   const handleGenerate = async (prompt: string, codeType: CodeType) => {
     if (!user) return;
 
-    // Check limit before streaming
     if (profile?.plan === 'free' && profile.generationsUsed >= profile.generationsLimit) {
       toast.error('Free limit reached. Upgrade to Pro for unlimited generations.');
       router.push('/pricing');
@@ -60,7 +59,6 @@ export default function DashboardPage() {
     startStream(prompt, codeType, token);
   };
 
-  // Update title when stream completes
   useEffect(() => {
     if (result?.title) {
       setCurrentTitle(result.title);
@@ -254,5 +252,17 @@ export default function DashboardPage() {
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-terminal flex items-center justify-center">
+        <div className="font-mono text-muted animate-pulse">Loading…</div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
