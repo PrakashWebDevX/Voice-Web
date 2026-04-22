@@ -33,7 +33,6 @@ router.post(
     // Check usage limits
     let user = await User.findOne({ uid });
     if (!user) {
-      // Auto-create user on first generation
       user = await User.create({
         uid,
         email: req.user!.email,
@@ -58,7 +57,7 @@ router.post(
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+    res.setHeader('X-Accel-Buffering', 'no');
     res.flushHeaders();
 
     const sendEvent = (event: string, data: unknown) => {
@@ -78,7 +77,6 @@ router.post(
         const durationMs = Date.now() - startTime;
 
         try {
-          // Generate title in parallel with saving
           const [title] = await Promise.all([generateTitle(prompt)]);
 
           const generation = await Generation.create({
@@ -92,9 +90,9 @@ router.post(
             title,
           });
 
-          savedGenerationId = (generation._id as string).toString();
+          // Fix: cast through unknown to safely convert ObjectId to string
+          savedGenerationId = String(generation._id);
 
-          // Increment usage for free users
           if (user!.plan === 'free') {
             await User.updateOne({ uid }, { $inc: { generationsUsed: 1 } });
           }

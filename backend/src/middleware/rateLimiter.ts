@@ -6,7 +6,8 @@ import { logger } from '../services/logger';
 function makeStore() {
   try {
     return new RedisStore({
-      sendCommand: (...args: string[]) => getRedisClient().call(...args) as any,
+      sendCommand: (command: string, ...args: string[]) =>
+        (getRedisClient() as any).call(command, ...args),
       prefix: 'vf_rl:',
     });
   } catch {
