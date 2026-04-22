@@ -11,11 +11,22 @@ interface VoiceInputProps {
   disabled?: boolean;
 }
 
-// Extend window for browser compatibility
+// Use any-typed interface to avoid TypeScript DOM lib dependency issues
+interface ISpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start: () => void;
+  stop: () => void;
+  onresult: ((event: any) => void) | null;
+  onerror: ((event: any) => void) | null;
+  onend: (() => void) | null;
+}
+
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: new () => ISpeechRecognition;
+    webkitSpeechRecognition: new () => ISpeechRecognition;
   }
 }
 
@@ -23,7 +34,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const [interimText, setInterimText] = useState('');
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<ISpeechRecognition | null>(null);
 
   useEffect(() => {
     const SpeechRecognitionAPI =
@@ -38,7 +49,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let interim = '';
       let final = '';
 
@@ -58,7 +69,7 @@ export default function VoiceInput({ onTranscript, disabled }: VoiceInputProps) 
       }
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: any) => {
       if (event.error !== 'aborted') {
         toast.error(`Voice error: ${event.error}`);
       }
