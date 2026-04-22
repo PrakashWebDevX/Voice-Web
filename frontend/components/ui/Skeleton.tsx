@@ -1,18 +1,18 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import React from 'react';
 
 interface SkeletonProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function Skeleton({ className }: SkeletonProps) {
+export function Skeleton({ className, style }: SkeletonProps) {
   return (
     <div
-      className={cn(
-        'animate-pulse bg-surface-2 rounded',
-        className
-      )}
+      className={cn('animate-pulse bg-surface-2 rounded', className)}
+      style={style}
     />
   );
 }
